@@ -1,0 +1,39 @@
+version: 2.1
+orbs:
+  slack: circleci/slack@3.2.0
+executors:
+  my-executor:
+    docker:
+      - image: circleci/openjdk
+    working_directory: ~/project
+
+API test on DEV:
+    docker:
+      - image: markhobson/maven-chrome
+    steps:
+      - checkout
+      - run:
+          name: run API tests
+          command: |
+            # echo "my artifact file" > ./artifact-1
+            cd ./testScripts
+            mvn clean verify
+            # ./build/test.sh $SFDC_REG_USER $SFDC_REG_PASSWORD
+      # - run:
+      #     name: check file
+      #     when: on_fail
+      #     command: |
+      #       cd ./testScripts
+      #       ls -l target/site
+      #       ls -l target/site/reports
+      - store_artifacts:
+          path: ./testScripts/target/site/reports/serenity-summary.html
+          destination: serenity_summary.html
+          
+      - slack/status:
+          # sccess_message: "Regression on QA Sandbox is successful" # Optional: Enter your own message
+          failure_message: "Mention ID's of the team members
+          fail_only: true
+          webhook: <Slack Web Notifications URL>
+             
+      
